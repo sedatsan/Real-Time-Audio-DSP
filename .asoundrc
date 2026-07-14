@@ -1,0 +1,9 @@
+pcm.!default {
+  type pulse
+  fallback "sysdefault"
+  hint.description "Default Audio Device (via PulseAudio)"
+}
+ctl.!default {
+  type pulse
+  fallback "sysdefault"
+}

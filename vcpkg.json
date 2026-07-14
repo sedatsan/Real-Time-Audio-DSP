@@ -1,0 +1,8 @@
+{
+  "name": "real-time-audio-dsp",
+  "version-string": "0.1.0",
+  "dependencies": [
+    "portaudio",
+    "raylib"
+  ]
+}

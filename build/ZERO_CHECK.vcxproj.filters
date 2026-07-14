@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <CustomBuild Include="X:\Vault\03_Projects\Real-Time-Audio-DSP\build\CMakeFiles\96af6cf91fba1e5200107a86a397553a\generate.stamp.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="CMake Rules">
+      <UniqueIdentifier>{C2F94AA6-C8B6-3135-BE76-EC9A883D7C6F}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

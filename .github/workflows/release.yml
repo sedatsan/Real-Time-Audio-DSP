@@ -1,0 +1,109 @@
+name: Real-Time Audio DSP CI/CD
+
+on:
+  push:
+    paths:
+      - 'Real-Time-Audio-DSP/**'
+      - '.github/workflows/real-time-audio-dsp.yml'
+  pull_request:
+    paths:
+      - 'Real-Time-Audio-DSP/**'
+
+defaults:
+  run:
+    working-directory: Real-Time-Audio-DSP
+
+jobs:
+  build:
+    name: Build on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        include:
+          - os: ubuntu-latest
+            artifact_name: RealTimeAudioDSP-Linux
+            executable_name: RealTimeAudioDSP
+            diag_name: DeviceDiagnostic
+          - os: windows-latest
+            artifact_name: RealTimeAudioDSP-Windows
+            executable_name: RealTimeAudioDSP.exe
+            diag_name: DeviceDiagnostic.exe
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install Linux Dependencies
+      if: runner.os == 'Linux'
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y libasound2-dev libxinerama-dev libxcursor-dev xorg-dev libglu1-mesa-dev pkg-config xvfb build-essential
+        
+        # Patch vcpkg portaudio portfile to enable ALSA and disable JACK
+        sed -i 's/-DPA_USE_ALSA=OFF/-DPA_USE_ALSA=ON/g' $VCPKG_INSTALLATION_ROOT/ports/portaudio/portfile.cmake
+        sed -i 's/-DPA_USE_JACK=ON/-DPA_USE_JACK=OFF/g' $VCPKG_INSTALLATION_ROOT/ports/portaudio/portfile.cmake
+
+    - name: Configure CMake
+      run: cmake -B build -DCMAKE_TOOLCHAIN_FILE=${{ env.VCPKG_INSTALLATION_ROOT }}/scripts/buildsystems/vcpkg.cmake
+
+    - name: Build
+      run: cmake --build build --config Release
+
+    - name: Test (Linux)
+      if: runner.os == 'Linux'
+      run: |
+        xvfb-run -a ./build/DeviceDiagnostic
+
+    - name: Test (Windows)
+      if: runner.os == 'Windows'
+      run: |
+        .\build\Release\DeviceDiagnostic.exe
+
+    - name: Prepare Artifact
+      shell: bash
+      run: |
+        mkdir -p staging
+        if [ "$RUNNER_OS" == "Windows" ]; then
+          cp build/Release/${{ matrix.executable_name }} staging/
+          cp build/Release/${{ matrix.diag_name }} staging/
+          cp build/Release/*.dll staging/ 2>/dev/null || true
+        else
+          cp build/${{ matrix.executable_name }} staging/
+          cp build/${{ matrix.diag_name }} staging/
+        fi
+        cp README.md staging/
+
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ matrix.artifact_name }}
+        path: Real-Time-Audio-DSP/staging/*
+
+  release:
+    name: Publish Release
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v')
+    
+    steps:
+    - uses: actions/download-artifact@v4
+      with:
+        path: artifacts
+
+    - name: Create Zip Archives
+      run: |
+        cd artifacts
+        for dir in */; do
+          dir=${dir%/}
+          zip -r "${dir}.zip" "$dir"
+        done
+
+    - name: Release
+      uses: softprops/action-gh-release@v2
+      with:
+        tag_name: ${{ startsWith(github.ref, 'refs/tags/v') && github.ref_name || 'latest' }}
+        name: Real-Time Audio DSP (${{ startsWith(github.ref, 'refs/tags/v') && github.ref_name || 'Latest' }})
+        files: artifacts/*.zip
+        make_latest: true
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
