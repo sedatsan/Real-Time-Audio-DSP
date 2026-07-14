@@ -1,17 +1,11 @@
-name: Real-Time Audio DSP CI/CD
+name: CI/CD Pipeline
 
 on:
   push:
-    paths:
-      - 'Real-Time-Audio-DSP/**'
-      - '.github/workflows/real-time-audio-dsp.yml'
+    branches: [ "main", "master" ]
+    tags: [ "v*" ]
   pull_request:
-    paths:
-      - 'Real-Time-Audio-DSP/**'
-
-defaults:
-  run:
-    working-directory: Real-Time-Audio-DSP
+    branches: [ "main", "master" ]
 
 jobs:
   build:
@@ -77,7 +71,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: ${{ matrix.artifact_name }}
-        path: Real-Time-Audio-DSP/staging/*
+        path: staging/*
 
   release:
     name: Publish Release
