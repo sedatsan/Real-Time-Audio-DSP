@@ -38,7 +38,8 @@ jobs:
         sed -i 's/-DPA_USE_JACK=ON/-DPA_USE_JACK=OFF/g' $VCPKG_INSTALLATION_ROOT/ports/portaudio/portfile.cmake
 
     - name: Configure CMake
-      run: cmake -B build -DCMAKE_TOOLCHAIN_FILE=${{ env.VCPKG_INSTALLATION_ROOT }}/scripts/buildsystems/vcpkg.cmake
+      shell: bash
+      run: cmake -B build -DCMAKE_TOOLCHAIN_FILE="$VCPKG_INSTALLATION_ROOT/scripts/buildsystems/vcpkg.cmake"
 
     - name: Build
       run: cmake --build build --config Release
