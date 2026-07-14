@@ -24,6 +24,8 @@ find_package(Threads REQUIRED)
 # ==========================================
 # 2. Digital Signal Processing Libraries (via vcpkg)
 # ==========================================
+find_package(Catch2 CONFIG REQUIRED)
+
 if(WIN32)
     find_package(portaudio CONFIG REQUIRED)
 else()
@@ -76,3 +78,18 @@ else()
             PkgConfig::PORTAUDIO
     )
 endif()
+
+# ==========================================
+# 4. Tests and Benchmarks
+# ==========================================
+enable_testing()
+
+add_executable(RealTimeAudioDSP_Tests
+    tests/test_fft.cpp
+    tests/test_ringbuffer.cpp
+    tests/benchmark.cpp
+    src/FFTEngine.cpp
+)
+
+target_include_directories(RealTimeAudioDSP_Tests PRIVATE include)
+target_link_libraries(RealTimeAudioDSP_Tests PRIVATE Catch2::Catch2WithMain Threads::Threads)

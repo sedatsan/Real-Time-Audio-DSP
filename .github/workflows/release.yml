@@ -51,11 +51,15 @@ jobs:
       if: runner.os == 'Linux'
       run: |
         xvfb-run -a ./build/DeviceDiagnostic
+        ./build/RealTimeAudioDSP_Tests
+        ./build/RealTimeAudioDSP_Tests "[benchmark]"
 
     - name: Test (Windows)
       if: runner.os == 'Windows'
       run: |
         .\build\Release\DeviceDiagnostic.exe
+        .\build\Release\RealTimeAudioDSP_Tests.exe
+        .\build\Release\RealTimeAudioDSP_Tests.exe "[benchmark]"
 
     - name: Prepare Artifact
       shell: bash
