@@ -24,7 +24,12 @@ find_package(Threads REQUIRED)
 # ==========================================
 # 2. Digital Signal Processing Libraries (via vcpkg)
 # ==========================================
-find_package(portaudio CONFIG REQUIRED)
+if(WIN32)
+    find_package(portaudio CONFIG REQUIRED)
+else()
+    find_package(PkgConfig REQUIRED)
+    pkg_check_modules(PORTAUDIO REQUIRED IMPORTED_TARGET portaudio-2.0)
+endif()
 
 # ==========================================
 # 3. Executable Configuration
@@ -38,11 +43,19 @@ add_executable(RealTimeAudioDSP
 target_include_directories(RealTimeAudioDSP PRIVATE include)
 
 # Link the hardware threads and PortAudio library
-target_link_libraries(RealTimeAudioDSP 
-    PRIVATE 
-        Threads::Threads 
-        portaudio
-)
+if(WIN32)
+    target_link_libraries(RealTimeAudioDSP 
+        PRIVATE 
+            Threads::Threads 
+            portaudio
+    )
+else()
+    target_link_libraries(RealTimeAudioDSP 
+        PRIVATE 
+            Threads::Threads 
+            PkgConfig::PORTAUDIO
+    )
+endif()
 
 add_executable(DeviceDiagnostic 
     src/sandbox_refactored.cpp
@@ -50,8 +63,16 @@ add_executable(DeviceDiagnostic
 
 target_include_directories(DeviceDiagnostic PRIVATE include)
 
-target_link_libraries(DeviceDiagnostic 
-    PRIVATE 
-        Threads::Threads 
-        portaudio
-)
+if(WIN32)
+    target_link_libraries(DeviceDiagnostic 
+        PRIVATE 
+            Threads::Threads 
+            portaudio
+    )
+else()
+    target_link_libraries(DeviceDiagnostic 
+        PRIVATE 
+            Threads::Threads 
+            PkgConfig::PORTAUDIO
+    )
+endif()
